@@ -29,19 +29,27 @@ def film_search(name: str, year: int) -> str:
     res = req.json()
 
     if res["total_results"] != 0:
-        return res
+        return res["results"][0]["id"]
     
     film_year -= 1
     new_film_url = f"https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={film_query}&include_adult=false&language=en-US&page=1&year={film_year}"
     new_req = requests.get(new_film_url, timeout=600)
     new_res = new_req.json()
-    return new_res
+    return new_res["results"][0]["id"]
     
-# -- TEST CASES --
-print(film_search("The Noose", 1928))
-print("\n")
-print(film_search("Dodsworth", 1937))
-print("\n")
-print(film_search("The Charge of the Light Brigade", 1937))
+oscars_df = pl.read_csv('./the_oscar_award.csv')
+tmdb_df = oscars_df.with_columns(
+    pl.when(pl.col('film').is_null())
+    .then(0)
+    .otherwise(pl.col(['film', 'year_ceremony']).apply(film_search))
+    .alias("new_name")
+)
+print(tmdb_df.head(10))
 
-# oscars_df = pl.read_csv('./the_oscar_award.csv')
+# print(oscars_df.tail(20))
+# -- TEST CASES --
+# print(film_search("The Noose", 1928))
+# print("\n")
+# print(film_search("Dodsworth", 1937))
+# print("\n")
+# print(film_search("The Charge of the Light Brigade", 1937))
