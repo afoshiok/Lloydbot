@@ -36,20 +36,30 @@ def film_search(name: str, year: int) -> str:
     new_req = requests.get(new_film_url, timeout=600)
     new_res = new_req.json()
     return new_res["results"][0]["id"]
-    
+
+def test_func(a, b):
+    return a , b
+   
 oscars_df = pl.read_csv('./the_oscar_award.csv')
 
-tmdb_df = oscars_df.with_columns(
-    pl.when(pl.col("film").is_not_null())
-    .then(pl.map_rows(oscars_df, lambda row: film_search(row["name"], row["year_ceremony"])))
-    .otherwise(-1)
-    .alias("TMDb_ID")
+build_df = oscars_df.select(
+    pl.col("film"),
+    pl.col("year_ceremony")
 )
 
-# print(oscars_df.head(10))
-print(tmdb_df.head(10))
+final_df = build_df.with_columns(
+    (
+        pl.when(
+            pl.col("film").is_not_null()
+        )
+        .then(1) #FIXME: run film_search() function
+        .otherwise(0)
+    )
+    .alias("TMDb_ID")
+)
+# # print(build_df.tail(20))
+# print(final_df.tail(10))
 
-# print(oscars_df.tail(20))
 # -- TEST CASES --
 # print(film_search("The Noose", 1928))
 # print("\n")
