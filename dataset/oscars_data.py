@@ -38,12 +38,15 @@ def film_search(name: str, year: int) -> str:
     return new_res["results"][0]["id"]
     
 oscars_df = pl.read_csv('./the_oscar_award.csv')
+
 tmdb_df = oscars_df.with_columns(
-    pl.when(pl.col('film').is_null())
-    .then(0)
-    .otherwise(pl.col(['film', 'year_ceremony']).apply(film_search))
-    .alias("new_name")
+    pl.when(pl.col("film").is_not_null())
+    .then(pl.map_rows(oscars_df, lambda row: film_search(row["name"], row["year_ceremony"])))
+    .otherwise(-1)
+    .alias("TMDb_ID")
 )
+
+# print(oscars_df.head(10))
 print(tmdb_df.head(10))
 
 # print(oscars_df.tail(20))
