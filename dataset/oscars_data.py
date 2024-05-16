@@ -40,29 +40,26 @@ def film_search(name: str, year: int) -> str:
 def test_func(a, b):
     return a , b
    
-oscars_df = pl.read_csv('./the_oscar_award.csv')
+if __name__ == "__main__":
+    oscars_df = pl.read_csv('./the_oscar_award.csv')
 
-build_df = oscars_df.select(
-    pl.col("film"),
-    pl.col("year_ceremony")
-)
-
-final_df = build_df.with_columns(
-    (
-        pl.when(
-            pl.col("film").is_not_null()
-        )
-        .then(1) #FIXME: run film_search() function
-        .otherwise(0)
+    build_df = oscars_df.select(
+        pl.col("film"),
+        pl.col("year_ceremony")
     )
-    .alias("TMDb_ID")
-)
-# # print(build_df.tail(20))
-# print(final_df.tail(10))
 
-# -- TEST CASES --
-# print(film_search("The Noose", 1928))
-# print("\n")
-# print(film_search("Dodsworth", 1937))
-# print("\n")
-# print(film_search("The Charge of the Light Brigade", 1937))
+    build_dict = build_df.to_dicts() #FIXME: Manipulate the dict, convert back to df and merge to original.
+
+    # for film in build_dict:
+    #     tmdb_id = film_search(film["film"], film["year_ceremony"])
+    #     film["tmdb_id"] = tmdb_id
+
+    print(build_dict)
+
+
+    # -- TEST CASES --
+    # print(film_search("The Noose", 1928))
+    # print("\n")
+    # print(film_search("Dodsworth", 1937))
+    # print("\n")
+    # print(film_search("The Charge of the Light Brigade", 1937))
