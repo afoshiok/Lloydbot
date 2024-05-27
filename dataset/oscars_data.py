@@ -91,6 +91,8 @@ async def main():
     for film, tmdb_id in zip(build_dict, results):
         film["adult"] = tmdb_id["adult"]
         film["budget"] = tmdb_id["budget"]
+        film["revenue"] = tmdb_id["revenue"]
+        film["runtime"] = tmdb_id["runtime"]
 
     final_df = pl.from_dicts(build_dict)
     # final_df.write_json("tmdb.json", pretty=True)
