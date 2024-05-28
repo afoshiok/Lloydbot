@@ -28,8 +28,9 @@ async def film_search(name: str, year: int) -> str:
     """Function send a query request to TMDb and returns film data. It takes in a 'name' and 'year' parameter,
     the 'year' parameter by default is the year the film won an Oscar.
     """
+
     if name == ' ' or (name is None):
-        return 0
+        return {}
     
     
     film_query = query(name)
@@ -62,7 +63,7 @@ async def film_search(name: str, year: int) -> str:
         return res
         # return new_res["results"][0]["id"]
     else:
-        return None
+        return {}
     
 async def main():
     oscars_df = pl.read_csv('./the_oscar_award.csv')
@@ -79,7 +80,16 @@ async def main():
         pl.col("winner")
     )
 
+    build_df = build_df.filter(pl.col("film").is_null()) #DEBUG Dealing with null data
     build_df = build_df.select(pl.head(["film", "name", "category", "ceremony", "year_ceremony", "year_film", "winner"], 10))
+
+    # if not build_df.is_empty():
+    #     print(build_df)
+    #     return
+
+    # if build_df.is_empty():
+    #     print("No rows with null values in the 'film' column.")
+    #     return
 
     build_dict = build_df.to_dicts()
 
@@ -89,10 +99,17 @@ async def main():
 
     # Add the tmdb_id to each film dictionary
     for film, tmdb_id in zip(build_dict, results):
-        film["adult"] = tmdb_id["adult"]
-        film["budget"] = tmdb_id["budget"]
-        film["revenue"] = tmdb_id["revenue"]
-        film["runtime"] = tmdb_id["runtime"]
+        if tmdb_id == {}:
+            film["adult"] = None
+            film["budget"] = None
+            film["revenue"] = None
+            film["runtime"] = None
+            
+        else:
+            film["adult"] = tmdb_id["adult"]
+            film["budget"] = tmdb_id["budget"]
+            film["revenue"] = tmdb_id["revenue"]
+            film["runtime"] = tmdb_id["runtime"]
 
     final_df = pl.from_dicts(build_dict)
     # final_df.write_json("tmdb.json", pretty=True)
