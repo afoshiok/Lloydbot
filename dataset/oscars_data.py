@@ -80,7 +80,7 @@ async def main():
         pl.col("winner")
     )
 
-    build_df = build_df.filter(pl.col("film").is_null()) #DEBUG Dealing with null data
+ 
     build_df = build_df.select(pl.head(["film", "name", "category", "ceremony", "year_ceremony", "year_film", "winner"], 10))
 
     # if not build_df.is_empty():
@@ -100,20 +100,25 @@ async def main():
     # Add the tmdb_id to each film dictionary
     for film, tmdb_id in zip(build_dict, results):
         if tmdb_id == {}:
+            film["tmdb_id"] = None
             film["adult"] = None
             film["budget"] = None
             film["revenue"] = None
             film["runtime"] = None
+            film["release_date"] = None
             
         else:
+            film["tmdb_id"] = tmdb_id["id"]
             film["adult"] = tmdb_id["adult"]
             film["budget"] = tmdb_id["budget"]
             film["revenue"] = tmdb_id["revenue"]
             film["runtime"] = tmdb_id["runtime"]
+            film["release_date"] = tmdb_id["release_date"]
+            film["overview"] = tmdb_id["overview"]
 
     final_df = pl.from_dicts(build_dict)
     # final_df.write_json("tmdb.json", pretty=True)
-    with pl.Config(fmt_str_lengths=1000):
+    with pl.Config(fmt_str_lengths=1000, tbl_cols=-1):
         print(final_df.head(10))
 
 if __name__ == "__main__":
